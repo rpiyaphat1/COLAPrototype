@@ -4,23 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IEP Smart Assistant v33 - Perfect Flow</title>
+    <title>ระบบสนับสนุนการดูแลนักเรียน (IEP Smart Assistant)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@300;400;500&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --primary: #2563eb;
-            --admin: #7c3aed;
+            --primary: #1e40af;
+            --admin: #5b21b6;
             --bg: #f8fafc;
             --white: #ffffff;
-            --border: #e2e8f0;
+            --border: #cbd5e1;
+            --text-main: #1e293b;
+            --text-label: #475569;
         }
 
         body {
-            font-family: 'Kanit', sans-serif;
+            font-family: 'Sarabun', 'Kanit', sans-serif;
             margin: 0;
             background: var(--bg);
-            color: #1e293b;
+            color: var(--text-main);
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -29,33 +33,34 @@
         nav {
             background: #0f172a;
             color: white;
-            padding: 1rem 2rem;
+            padding: 0.8rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
         }
 
         .nav-links button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 12px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: #94a3b8;
+            padding: 10px 18px;
+            border-radius: 8px;
             cursor: pointer;
             transition: 0.3s;
             margin-left: 10px;
+            font-family: 'Sarabun', sans-serif;
         }
 
         .nav-links button.active {
             background: var(--primary);
+            color: white;
             border-color: var(--primary);
-            font-weight: 600;
         }
 
         .container {
             flex: 1;
-            padding: 20px;
+            padding: 25px;
             max-width: 1200px;
             margin: 0 auto;
             width: 100%;
@@ -68,7 +73,7 @@
             display: none;
             height: 100%;
             overflow-y: auto;
-            padding-bottom: 80px;
+            padding-bottom: 40px;
         }
 
         .page.active {
@@ -78,46 +83,63 @@
 
         .card {
             background: var(--white);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             border: 1px solid var(--border);
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-label);
+            display: block;
+            margin-bottom: 10px;
         }
 
         input,
         select,
         textarea {
             width: 100%;
-            padding: 12px;
+            padding: 12px 16px;
             border: 1px solid var(--border);
-            border-radius: 10px;
-            box-sizing: border-box;
-            font-family: inherit;
+            border-radius: 8px;
+            font-family: 'Sarabun', sans-serif;
             font-size: 1rem;
+            transition: all 0.2s;
         }
 
-        label {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #475569;
-            display: block;
-            margin-bottom: 5px;
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1);
         }
 
         .btn {
-            padding: 12px 25px;
-            border-radius: 10px;
+            padding: 12px 24px;
+            border-radius: 8px;
             border: none;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.2s;
+            font-family: 'Sarabun', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-primary {
@@ -130,49 +152,12 @@
             color: white;
         }
 
-        .btn-edit {
-            background: #f59e0b;
-            color: white;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            margin-right: 5px;
-        }
-
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-
-        th,
-        td {
-            padding: 14px;
-            border: 1px solid #f1f5f9;
-            text-align: left;
-        }
-
-        th {
-            background: #f8fafc;
-            color: #64748b;
-            font-size: 0.9rem;
-        }
-
         .chat-view {
             flex: 1;
             display: flex;
             flex-direction: column;
             background: var(--white);
-            border-radius: 24px;
+            border-radius: 20px;
             border: 1px solid var(--border);
             overflow: hidden;
         }
@@ -181,60 +166,62 @@
             flex: 1;
             padding: 25px;
             overflow-y: auto;
-            background: #f8fafc;
+            background: #f1f5f9;
         }
 
         .msg {
             margin-bottom: 15px;
             padding: 15px 20px;
-            border-radius: 20px;
-            max-width: 90%;
+            border-radius: 15px;
+            max-width: 80%;
             line-height: 1.6;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-            }
         }
 
         .user-msg {
-            background: var(--primary);
-            color: white;
+            background: #e2e8f0;
+            color: #1e293b;
             align-self: flex-end;
             margin-left: auto;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 2px;
         }
 
         .ai-msg {
             background: white;
-            border: 1px solid var(--border);
+            border: 1px solid #e2e8f0;
             align-self: flex-start;
-            border-bottom-left-radius: 4px;
+            border-bottom-left-radius: 2px;
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 0.9rem;
         }
 
         .footer {
             padding: 20px;
             display: flex;
-            gap: 10px;
-            border-top: 1px solid #f1f5f9;
+            gap: 12px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
         }
 
-        .option-btn {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            color: #1e40af;
-            padding: 8px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            margin: 4px;
-            font-size: 0.85rem;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
         }
     </style>
 </head>
@@ -242,34 +229,36 @@
 <body>
 
     <nav>
-        <div style="font-weight: 600; font-size: 1.2rem;">IEP Assistant <span style="color:#60a5fa">v33</span></div>
+        <div style="font-weight: 500; font-size: 1.2rem;">ระบบสารสนเทศนักเรียน <span style="color:#60a5fa">| IEP
+                Assistant</span></div>
         <div class="nav-links">
-            <button id="navChat" class="active" onclick="togglePage('chat')">แชทบอท</button>
-            <button id="navAdmin" onclick="togglePage('admin')">จัดการข้อมูล (Admin)</button>
+            <button id="navChat" class="active" onclick="togglePage('chat')">สืบค้นข้อมูล</button>
+            <button id="navAdmin" onclick="togglePage('admin')">จัดการฐานข้อมูล (Admin)</button>
         </div>
     </nav>
 
     <div class="container">
         <div id="adminPage" class="page">
-            <div class="card" style="border: 2px dashed var(--admin); background: #f5f3ff; text-align: center;">
-                <h3>📥 นำเข้าข้อมูลนักเรียน (Excel/CSV)</h3>
+            <div class="card" style="border: 1px dashed var(--admin); text-align: center;">
+                <h3>📥 นำเข้าไฟล์ข้อมูล</h3>
                 <input type="file" id="excelInput" accept=".xlsx, .csv" style="display:none"
                     onchange="importData(event)">
-                <button class="btn btn-admin" onclick="document.getElementById('excelInput').click()">📁
-                    เลือกไฟล์จากเครื่อง</button>
+                <button class="btn btn-admin" onclick="document.getElementById('excelInput').click()">📁 เลือกไฟล์
+                    Excel/CSV</button>
             </div>
 
             <div class="card">
-                <h3 style="margin-top:0; color:var(--primary);" id="formTitle">👤 เพิ่ม/แก้ไข ข้อมูลนักเรียนรายคน</h3>
+                <h3 id="formTitle" style="color:var(--primary);">👤 เพิ่มข้อมูลนักเรียน</h3>
                 <input type="hidden" id="editIndex" value="-1">
                 <div class="grid">
-                    <div><label>ชื่อเล่น *</label><input type="text" id="inNick"></div>
-                    <div><label>ชื่อจริง-นามสกุล *</label><input type="text" id="inFull"></div>
-                    <div><label>ชั้นเรียน *</label><input type="text" id="inClass"></div>
-                    <div>
+                    <div class="form-group"><label>ชื่อเรียก/ชื่อเล่น</label><input type="text" id="inNick"></div>
+                    <div class="form-group"><label>ชื่อจริง-นามสกุล</label><input type="text" id="inFull"></div>
+                    <div class="form-group"><label>ระดับชั้น</label><input type="text" id="inClass"
+                            placeholder="เช่น ป.1/1"></div>
+                    <div class="form-group">
                         <label>ประเภทความบกพร่อง</label>
                         <select id="inType">
-                            <option value="0">0. บุคคลทั่วไป</option>
+                            <option value="0" selected>0. บุคคลทั่วไป</option>
                             <option value="1">1. เห็น</option>
                             <option value="2">2. ได้ยิน</option>
                             <option value="3">3. สติปัญญา</option>
@@ -277,28 +266,26 @@
                             <option value="5">5. เรียนรู้ (LD)</option>
                             <option value="6">6. พูด/ภาษา</option>
                             <option value="7">7. พฤติกรรม</option>
-                            <option value="8" selected>8. ออทิสติก</option>
+                            <option value="8">8. ออทิสติก</option>
                             <option value="9">9. พิการซ้อน</option>
                         </select>
                     </div>
                 </div>
-                <textarea id="inHandle" rows="2" placeholder="วิธีรับมือเฉพาะบุคคล..."
-                    style="margin-top:15px;"></textarea>
-                <button class="btn btn-primary" id="saveBtn" style="width:100%; margin-top:15px;"
-                    onclick="saveStudent()">💾 บันทึกข้อมูลนักเรียน</button>
+                <div class="form-group"><label>เทคนิคเฉพาะบุคคล</label><textarea id="inHandle" rows="3"></textarea>
+                </div>
+                <button class="btn btn-primary" style="width:100%" onclick="saveStudent()">💾 บันทึกข้อมูล</button>
             </div>
 
             <div class="card">
-                <h3>📑 รายชื่อนักเรียนทั้งหมด (<span id="count">0</span> คน)</h3>
+                <h3>📑 รายชื่อนักเรียน (<span id="count">0</span>)</h3>
                 <div style="overflow-x:auto;">
                     <table id="studentTable">
                         <thead>
                             <tr>
                                 <th>ลำดับ</th>
-                                <th>ชื่อเล่น</th>
+                                <th>ชื่อเรียก</th>
                                 <th>ชื่อจริง</th>
-                                <th>ชั้นเรียน</th>
-                                <th>ประเภท</th>
+                                <th>ชั้น</th>
                                 <th>จัดการ</th>
                             </tr>
                         </thead>
@@ -311,32 +298,24 @@
         <div id="chatPage" class="page active">
             <div class="chat-view">
                 <div class="messages" id="chatBox">
-                    <div class="msg ai-msg">
-                        สวัสดีครับคุณครู! ระบบพร้อมทำงานแล้วครับ <br>
-                        - พิมพ์ <strong>"ขอรายชื่อ ป.1/1"</strong> เพื่อดูรายชื่อห้องนั้น <br>
-                        - พิมพ์ <strong>ชื่อเล่น</strong> เพื่อดูวิธีรับมือทันทีครับ
-                    </div>
+                    <div class="msg ai-msg"><strong>สวัสดีครับ</strong><br>พิมพ์ชื่อนักเรียน หรือระดับชั้น (เช่น ป.1/1)
+                        เพื่อค้นหาครับ</div>
                 </div>
                 <div class="footer">
-                    <input type="text" id="chatInput" placeholder="พิมพ์ชื่อ หรือ 'ขอรายชื่อ ป.1/1'..."
+                    <input type="text" id="chatInput" placeholder="กรอกชื่อ หรือระดับชั้น..."
                         onkeypress="if(event.key==='Enter') doSearch()">
-                    <button class="btn btn-primary" onclick="doSearch()">ค้นหา</button>
+                    <button class="btn btn-primary" onclick="doSearch()">🔍 สืบค้น</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const typeNames = { "0": "บุคคลทั่วไป", "1": "บกพร่องทางการเห็น", "2": "บกพร่องทางการได้ยิน", "3": "บกพร่องทางสติปัญญา", "4": "บกพร่องทางร่างกาย/สุขภาพ", "5": "ปัญหาทางการเรียนรู้ (LD)", "6": "บกพร่องทางการพูด/ภาษา", "7": "ปัญหาทางพฤติกรรม/อารมณ์", "8": "บุคคลออทิสติก", "9": "บุคคลพิการซ้อน" };
-        const careInfo = { "0": "ทั่วไป: ส่งเสริมศักยภาพปกติ", "1": "เน้นสื่อสัมผัส/เสียง", "2": "เน้นสื่อภาพ", "3": "ย่อยเนื้อหาให้สั้น", "4": "จัดพื้นที่สะดวก", "5": "ให้เวลาเพิ่ม", "6": "รอคอยตั้งใจ", "7": "แรงเสริมบวก", "8": "ตารางเวลาภาพ", "9": "สอนทักษะชีวิต" };
-
+        const typeNames = { "0": "บุคคลทั่วไป", "1": "บกพร่องทางการเห็น", "2": "บกพร่องทางการได้ยิน", "3": "บกพร่องทางสติปัญญา", "4": "บกพร่องทางร่างกาย/สุขภาพ", "5": "บกพร่องทางการเรียนรู้ (LD)", "6": "บกพร่องทางการพูด/ภาษา", "7": "บกพร่องทางพฤติกรรม/อารมณ์", "8": "บุคคลออทิสติก", "9": "บุคคลพิการซ้อน" };
+        const careInfo = { "0": "ส่งเสริมศักยภาพปกติ", "1": "สื่อประสม/เสียง", "2": "ภาพ/สัญลักษณ์", "3": "ย่อยเนื้อหา", "4": "สะดวกกายภาพ", "5": "ให้เวลาเพิ่ม", "6": "ตั้งใจฟัง", "7": "แรงเสริมบวก", "8": "ตารางภาพ", "9": "ทักษะชีวิต" };
         let db = [];
 
-        function norm(txt) {
-            if (!txt) return "";
-            return txt.toString().toLowerCase().replace(/[.\s\/-]/g, '').replace(/ป/g, '').trim();
-        }
-
+        function norm(txt) { return txt ? txt.toString().toLowerCase().replace(/[.\s\/-]/g, '').replace(/ป/g, '').trim() : ""; }
         function clean(v) { return (!v || v.toString().trim() === "" || v === "undefined") ? "-" : v.toString().trim(); }
 
         function togglePage(p) {
@@ -350,23 +329,20 @@
             const file = event.target.files[0];
             const reader = new FileReader();
             reader.onload = function (e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
+                const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
                 const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
                 json.forEach((item, idx) => {
-                    let tKey = Object.keys(item).find(k => k.includes("ประเภท"));
-                    let rawT = tKey ? String(item[tKey]) : "0";
-                    let numMatch = rawT.match(/\d+/);
+                    let rawT = String(item["ประเภท"] || "0");
                     db.push({
                         originalIdx: item["ลำดับ"] || idx + 1,
-                        nick: clean(item["ชื่อเล่น"]),
+                        nick: clean(item["ชื่อเล่น"] || item["ชื่อเรียก"]),
                         full: clean(item["ชื่อ - นามสกุล"] || item["ชื่อจริง"]),
                         class: clean(item["ชั้นเรียน"]),
-                        type: numMatch ? numMatch[0] : "0",
-                        handle: clean(item["วิธีรับมือ"])
+                        type: rawT.match(/\d+/) ? rawT.match(/\d+/)[0] : "0",
+                        handle: clean(item["วิธีรับมือ"] || item["เทคนิคเฉพาะ"])
                     });
                 });
-                alert("นำเข้าสำเร็จ!"); renderTable();
+                renderTable(); alert("นำเข้าสำเร็จ");
             };
             reader.readAsArrayBuffer(file);
         }
@@ -381,38 +357,28 @@
                 type: document.getElementById('inType').value,
                 handle: clean(document.getElementById('inHandle').value)
             };
-            if (idx === -1) { db.push(s); } else { db[idx] = s; }
-            resetForm(); renderTable(); alert("บันทึกเรียบร้อย");
+            if (idx === -1) db.push(s); else db[idx] = s;
+            resetForm(); renderTable(); alert("บันทึกสำเร็จ");
+        }
+
+        function renderTable() {
+            document.getElementById('count').innerText = db.length;
+            document.querySelector("#studentTable tbody").innerHTML = db.map((s, i) => `<tr><td>${s.originalIdx}</td><td>${s.nick}</td><td>${s.full}</td><td>${s.class}</td><td><button onclick="editStudent(${i})">แก้ไข</button></td></tr>`).join('');
         }
 
         function editStudent(i) {
             const s = db[i];
-            document.getElementById('inNick').value = s.nick;
-            document.getElementById('inFull').value = s.full;
-            document.getElementById('inClass').value = s.class;
-            document.getElementById('inType').value = s.type;
+            document.getElementById('inNick').value = s.nick; document.getElementById('inFull').value = s.full;
+            document.getElementById('inClass').value = s.class; document.getElementById('inType').value = s.type;
             document.getElementById('inHandle').value = s.handle === "-" ? "" : s.handle;
             document.getElementById('editIndex').value = i;
-            document.getElementById('formTitle').innerText = "📝 แก้ไขข้อมูล: " + s.nick;
-            document.getElementById('saveBtn').innerText = "💾 อัปเดตข้อมูล";
-            document.getElementById('adminPage').scrollTop = 0;
+            togglePage('admin');
         }
 
         function resetForm() {
             document.getElementById('inNick').value = ""; document.getElementById('inFull').value = "";
             document.getElementById('inClass').value = ""; document.getElementById('inHandle').value = "";
-            document.getElementById('editIndex').value = "-1";
-            document.getElementById('formTitle').innerText = "👤 เพิ่มข้อมูลนักเรียนรายคน";
-            document.getElementById('saveBtn').innerText = "💾 บันทึกข้อมูลนักเรียน";
-        }
-
-        function renderTable() {
-            document.getElementById('count').innerText = db.length;
-            const tb = document.querySelector("#studentTable tbody");
-            tb.innerHTML = db.map((s, i) => `<tr>
-            <td>${s.originalIdx}</td><td>${s.nick}</td><td>${s.full}</td><td>${s.class}</td><td>${typeNames[s.type]}</td>
-            <td><button class="btn btn-edit" onclick="editStudent(${i})">แก้ไข</button><button class="btn btn-delete" onclick="db.splice(${i},1);renderTable()">ลบ</button></td>
-        </tr>`).join('');
+            document.getElementById('inType').value = "0"; document.getElementById('editIndex').value = "-1";
         }
 
         function doSearch() {
@@ -424,52 +390,31 @@
             setTimeout(() => {
                 const target = norm(val);
 
-                // 1. ตรวจสอบว่าเป็นการส่ง "ชื่อเต็มเป๊ะๆ" จากปุ่มหรือไม่ (ข้ามการถามซ้ำ)
+                // 1. ตรวจสอบชื่อเต็มเป๊ะๆ
                 let exactMatch = db.find(s => s.full === val);
                 if (exactMatch) return addMsg(report(exactMatch), 'ai-msg');
 
-                // 2. คำสั่งขอรายชื่อ (เจาะจงห้อง หรือ ทั้งหมด)
-                if (val.includes("รายชื่อ") || val.includes("สรุป")) {
-                    let filterClass = db.find(s => val.includes(s.class) || val.includes(norm(s.class)));
-                    let listToDisplay = filterClass ? db.filter(s => norm(s.class) === norm(filterClass.class)) : db;
-
-                    if (listToDisplay.length === 0) return addMsg("ไม่พบข้อมูลรายชื่อในระบบครับ", 'ai-msg');
-
-                    const groups = listToDisplay.reduce((acc, s) => {
-                        (acc[s.class] = acc[s.class] || []).push(s);
-                        return acc;
-                    }, {});
-
-                    let res = `📑 <strong>รายชื่อนักเรียน${filterClass ? 'ชั้น ' + filterClass.class : ''}:</strong><br>`;
-                    Object.keys(groups).sort().forEach(cls => {
-                        res += `<br>📍 <strong>ชั้นเรียน: ${cls}</strong><br>`;
-                        groups[cls].sort((a, b) => a.originalIdx - b.originalIdx).forEach(s => {
-                            res += `${s.originalIdx}. ${s.nick} - ${s.full}<br>`;
-                        });
-                    });
-                    return addMsg(res, 'ai-msg');
-                }
-
-                // 3. ค้นหาชั้นเรียน (ป.1/1)
+                // 2. ค้นหาแบบระดับชั้น (ป.1/1)
                 let classMatches = db.filter(s => norm(s.class) === target || (val.includes("/") && norm(s.class).includes(target)));
                 if (classMatches.length > 0 && (val.includes("/") || target.length <= 4)) {
-                    let btns = classMatches.map(s => `<button class="option-btn" onclick="setSearch('${s.full}')">${s.nick} (${s.full})</button>`).join('');
-                    return addMsg(`พบน้องในห้อง <strong>${val}</strong> (${classMatches.length} คน):<br>${btns}`, 'ai-msg');
+                    let btns = classMatches.map(s => `<button class="option-btn" onclick="setSearch('${s.full}')">${s.full} (${s.nick})</button>`).join('');
+                    return addMsg(`พบน้องนักเรียนห้อง <strong>${val}</strong> จำนวน ${classMatches.length} ท่าน:<br>${btns}`, 'ai-msg');
                 }
 
-                // 4. ค้นหาชื่อ
+                // 3. ค้นหาชื่อเล่น หรือชื่อที่ใกล้เคียง
                 let nameMatches = db.filter(s => norm(s.nick).includes(target) || target.includes(norm(s.nick)) || norm(s.full).includes(target));
                 if (nameMatches.length === 1) return addMsg(report(nameMatches[0]), 'ai-msg');
                 if (nameMatches.length > 1) {
-                    let btns = nameMatches.map(s => `<button class="option-btn" onclick="setSearch('${s.full}')">${s.nick} (${s.full}) [${s.class}]</button>`).join('');
-                    return addMsg(`พบชื่อใกล้เคียงกับ <strong>"${val}"</strong> ครับ หมายถึงท่านไหนครับ?<br>${btns}`, 'ai-msg');
+                    let btns = nameMatches.map(s => `<button class="option-btn" onclick="setSearch('${s.full}')">${s.full} [${s.class}]</button>`).join('');
+                    return addMsg(`พบข้อมูลใกล้เคียงกับ <strong>"${val}"</strong> หลายรายการครับ:<br>${btns}`, 'ai-msg');
                 }
-                addMsg(`ไม่พบข้อมูลครับ ลองพิมพ์ชื่อเล่นน้อง หรือเลขห้องดูใหม่ครับ`, 'ai-msg');
+
+                addMsg(`ขออภัยครับ ไม่พบข้อมูลนักเรียนชื่อ "${val}" ในระบบ`, 'ai-msg');
             }, 400);
         }
 
         function report(s) {
-            return `📊 <strong>ข้อมูล: ${s.nick}</strong><br>ชื่อ: ${s.full} | ชั้น: ${s.class}<br>ประเภท: ${typeNames[s.type]}<br><hr style="border:0; border-top:1px solid #eee;">✅ วิธีรับมือ: ${careInfo[s.type]}<br>${s.handle !== "-" ? `💡 เทคนิคเฉพาะ: <span style="color:blue">${s.handle}</span>` : ""}`;
+            return `📊 <strong>ข้อมูล: ${s.full}</strong><br>ชื่อเล่น: ${s.nick} | ชั้น: ${s.class}<br>ประเภท: ${typeNames[s.type]}<br><hr>✅ แนวทาง: ${careInfo[s.type]}<br>${s.handle !== "-" ? `💡 เทคนิค: ${s.handle}` : ""}`;
         }
 
         function addMsg(t, c) {
