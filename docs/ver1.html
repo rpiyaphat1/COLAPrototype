@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IEP Smart Assistant - ระบบดูแลนักเรียน LD</title>
+    <title>IEP Smart Assistant - ระบบสนับสนุนการดูแลนักเรียน</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@300;400;500&display=swap"
@@ -265,15 +265,6 @@
             font-family: 'Sarabun';
             margin-top: 5px;
         }
-
-        .subject-tag {
-            display: inline-block;
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-        }
     </style>
 </head>
 
@@ -295,7 +286,7 @@
     </div>
 
     <nav id="mainNav">
-        <div style="font-weight: 500;">IEP <span style="color:#60a5fa">Assistant (LD Support)</span></div>
+        <div style="font-weight: 500;">IEP <span style="color:#60a5fa">Assistant</span></div>
         <div class="nav-links">
             <button id="navChat" class="active" onclick="togglePage('chat')">💬 แชทสืบค้น</button>
             <button id="navDir" onclick="togglePage('dir')">📂 รายชื่อเด็ก</button>
@@ -313,7 +304,7 @@
                 </div>
                 <div class="footer"
                     style="padding:15px; display:flex; gap:10px; background:white; border-top:1px solid #ddd;">
-                    <input type="text" id="chatInput" placeholder="พิมพ์ชื่อเด็ก หรือวิชาที่มีปัญหา..."
+                    <input type="text" id="chatInput" placeholder="พิมพ์ชื่อเด็ก หรือประเภท..."
                         onkeypress="if(event.key==='Enter') doSmartSearch()">
                     <button class="btn-login" style="margin-top:0; width:100px" onclick="doSmartSearch()">ส่ง</button>
                 </div>
@@ -322,7 +313,7 @@
 
         <div id="dirPage" class="page">
             <div class="card">
-                <h3>📂 ทำเนียบนักเรียน LD แยกตามห้อง</h3>
+                <h3>📂 ทำเนียบนักเรียนแยกตามห้อง</h3>
                 <div id="directoryContent"></div>
             </div>
         </div>
@@ -330,8 +321,6 @@
         <div id="adminPage" class="page">
             <div class="card" style="border: 2px dashed var(--admin);">
                 <h3>📥 นำเข้าไฟล์ (Excel/CSV)</h3>
-                <p style="font-size:0.8rem; color:#666; margin-top:-10px;">*คอลัมน์ที่รองรับ: ชื่อเล่น, ชื่อจริง, ชั้น,
-                    วิชาที่บกพร่อง, วิธีรับมือ</p>
                 <input type="file" id="excelInput" accept=".xlsx, .csv" onchange="importData(event)">
             </div>
 
@@ -342,20 +331,22 @@
                     <div><label>ชื่อจริง-นามสกุล</label><input type="text" id="inFull"></div>
                     <div><label>ชั้น (เช่น ป.1/1)</label><input type="text" id="inClass"></div>
                     <div>
-                        <label>วิชาที่มีปัญหา (LD)</label>
-                        <select id="inSubject">
-                            <option value="ภาษาไทย">ภาษาไทย</option>
-                            <option value="คณิตศาสตร์">คณิตศาสตร์</option>
-                            <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
-                            <option value="สังคมศึกษา ศาสนาและวัฒนธรรม">สังคมศึกษา ศาสนาและวัฒนธรรม</option>
-                            <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
-                            <option value="ศิลปะ">ศิลปะ</option>
-                            <option value="การงานอาชีพและเทคโนโลยี">การงานอาชีพและเทคโนโลยี</option>
-                            <option value="ภาษาอังกฤษ">ภาษาอังกฤษ</option>
+                        <label>ประเภทความบกพร่อง</label>
+                        <select id="inType">
+                            <option value="0">0. บุคคลทั่วไป</option>
+                            <option value="1">1. การเห็น</option>
+                            <option value="2">2. การได้ยิน</option>
+                            <option value="3">3. สติปัญญา</option>
+                            <option value="4">4. ร่างกาย</option>
+                            <option value="5">5. เรียนรู้ (LD)</option>
+                            <option value="6">6. พูด/ภาษา</option>
+                            <option value="7">7. พฤติกรรม</option>
+                            <option value="8">8. ออทิสติก</option>
+                            <option value="9">9. พิการซ้อน</option>
                         </select>
                     </div>
                 </div>
-                <div style="margin-top:15px;"><label>วิธีรับมือ/แผน IEP</label><textarea id="inHandle"
+                <div style="margin-top:15px;"><label>วิธีรับมือ/เทคนิคเฉพาะ</label><textarea id="inHandle"
                         rows="3"></textarea></div>
                 <button class="btn-login" style="background:var(--admin)" onclick="saveStudent()">💾
                     บันทึกข้อมูล</button>
@@ -371,18 +362,11 @@
     <script>
         let db = [];
         let currentUser = null;
-
-        // รายชื่อวิชา (เพิ่มภาษาอังกฤษเข้าไปแล้ว)
-        const subjectList = [
-            "ภาษาไทย",
-            "คณิตศาสตร์",
-            "วิทยาศาสตร์และเทคโนโลยี",
-            "สังคมศึกษา ศาสนาและวัฒนธรรม",
-            "สุขศึกษาและพลศึกษา",
-            "ศิลปะ",
-            "การงานอาชีพและเทคโนโลยี",
-            "ภาษาอังกฤษ"
-        ];
+        const typeNames = {
+            "0": "บุคคลทั่วไป", "1": "บกพร่องทางการเห็น", "2": "บกพร่องทางการได้ยิน",
+            "3": "บกพร่องทางสติปัญญา", "4": "บกพร่องทางร่างกาย", "5": "บกพร่องทางการเรียนรู้ (LD)",
+            "6": "บกพร่องทางการพูด/ภาษา", "7": "บกพร่องทางพฤติกรรม", "8": "บุคคลออทิสติก", "9": "บุคคลพิการซ้อน"
+        };
 
         function login() {
             const u = document.getElementById('userIn').value.trim().toLowerCase();
@@ -419,15 +403,13 @@
                         const foundKey = Object.keys(item).find(k => keys.some(target => k.replace(/\s/g, '').includes(target)));
                         return foundKey ? item[foundKey] : null;
                     };
-
-                    // หาค่าวิชา ถ้าไม่มีให้ใส่เป็นภาษาไทย
-                    let subj = getVal(["วิชา", "subject", "ปัญหา"]) || "ภาษาไทย";
-
+                    const rawType = String(getVal(["ประเภท", "Type"]) || "0");
+                    const typeMatch = rawType.match(/\d+/);
                     db.push({
                         nick: getVal(["ชื่อเล่น", "ชื่อเรียก"]) || "-",
                         full: getVal(["ชื่อ-นามสกุล", "ชื่อจริง", "ชื่อ-นามสกุล"]) || "-",
                         class: getVal(["ชั้นเรียน", "ชั้น", "ห้อง"]) || "-",
-                        subject: subj, // เก็บวิชา
+                        type: typeMatch ? typeMatch[0] : "0",
                         handle: getVal(["วิธีรับมือ", "เทคนิค", "หมายเหตุ"]) || "-"
                     });
                 });
@@ -445,12 +427,12 @@
                 <div class="admin-list-group">
                     <div class="class-badge">ห้อง ${c}</div>
                     <table>
-                        <thead><tr><th>ชื่อเล่น</th><th>ชื่อจริง-นามสกุล</th><th>วิชาที่มีปัญหา</th><th>จัดการ</th></tr></thead>
+                        <thead><tr><th>ชื่อเล่น</th><th>ชื่อจริง-นามสกุล</th><th>ประเภท</th><th>จัดการ</th></tr></thead>
                         <tbody>
                             ${db.filter(s => s.class === c).map(s => `<tr>
                                 <td>${s.nick}</td>
                                 <td>${s.full}</td>
-                                <td><span class="subject-tag">${s.subject}</span></td>
+                                <td>${s.type}. ${typeNames[s.type]}</td>
                                 <td><button onclick="deleteStudent(${db.indexOf(s)})" style="color:red; border:none; background:none; cursor:pointer;">ลบ</button></td>
                             </tr>`).join('')}
                         </tbody>
@@ -466,14 +448,11 @@
                 nick: document.getElementById('inNick').value || "-",
                 full: document.getElementById('inFull').value || "-",
                 class: document.getElementById('inClass').value || "-",
-                subject: document.getElementById('inSubject').value, // บันทึกวิชา
+                type: document.getElementById('inType').value,
                 handle: document.getElementById('inHandle').value || "-"
             });
             renderAdminView(); alert("บันทึกแล้ว");
-            document.getElementById('inNick').value = "";
-            document.getElementById('inFull').value = "";
-            document.getElementById('inClass').value = "";
-            document.getElementById('inHandle').value = "";
+            document.querySelectorAll('#adminPage input, #adminPage textarea').forEach(el => el.value = "");
         }
 
         function renderDirectory() {
@@ -485,8 +464,7 @@
                     <div class="directory-grid">
                         ${db.filter(s => s.class === c).map(s => `
                             <div style="background:white; padding:10px; border-radius:8px; border:1px solid #eee; font-size:0.9rem;">
-                                <strong>${s.full} (${s.nick})</strong><br>
-                                <span style="color:#64748b; font-size:0.85rem;">⚠️ วิชา: ${s.subject}</span>
+                                <strong>${s.full} (${s.nick})</strong><br><small style="color:#666">${typeNames[s.type]}</small>
                             </div>
                         `).join('')}
                     </div>
@@ -494,7 +472,7 @@
             `).join('');
         }
 
-        // --- ระบบ AI SMART SEARCH ---
+        // --- ส่วนที่แก้ไข: AI SMART SEARCH พร้อมระบบปุ่มตัวเลือก ---
         function doSmartSearch() {
             const val = document.getElementById('chatInput').value.trim();
             if (!val) return;
@@ -504,50 +482,43 @@
             setTimeout(() => {
                 const text = val.toLowerCase();
 
-                // 1. ค้นหาตามวิชา
-                const foundSubject = subjectList.find(s =>
-                    text.includes(s) ||
-                    (text.includes("วิทย์") && s.includes("วิทยาศาสตร์")) ||
-                    (text.includes("งาน") && s.includes("การงาน")) ||
-                    (text.includes("อังกฤษ") && s.includes("ภาษาอังกฤษ")) // รองรับคำว่า "อังกฤษ" เฉยๆ
-                );
-
-                if (foundSubject) {
-                    let filtered = db.filter(s => s.subject === foundSubject);
-                    if (filtered.length > 0) {
-                        return addMsg(formatList(`พบน้องที่มีปัญหาในรายวิชา <strong>${foundSubject}</strong> ทั้งหมด ${filtered.length} ท่าน:`, filtered), 'ai-msg');
-                    } else {
-                        return addMsg(`ไม่พบรายชื่อนักเรียนที่มีปัญหาในวิชา ${foundSubject} ครับ`, 'ai-msg');
+                // 1. ค้นหาตามประเภทนักเรียน (เช่น "เด็ก LD")
+                for (let key in typeNames) {
+                    if (text.includes(typeNames[key].toLowerCase()) || (key === "5" && text.includes("ld"))) {
+                        let filtered = db.filter(s => s.type === key);
+                        if (filtered.length > 0) return addMsg(formatList(`พบน้องนักเรียนกลุ่ม ${typeNames[key]} ทั้งหมด ${filtered.length} ท่าน:`, filtered), 'ai-msg');
                     }
                 }
 
-                // 2. ค้นหาตามชื่อ
+                // 2. ค้นหาตามชื่อ (ชื่อจริง หรือ ชื่อเล่น)
                 let matches = db.filter(s => text.includes(s.nick.toLowerCase()) || text.includes(s.full.toLowerCase()) || s.full.toLowerCase().includes(text));
 
                 if (matches.length === 1) {
+                    // พบคนเดียว แสดงข้อมูลทันที
                     return addMsg(report(matches[0]), 'ai-msg');
                 } else if (matches.length > 1) {
+                    // พบหลายคน (ชื่อซ้ำ) -> ส่งปุ่มตัวเลือก
                     let btns = matches.map(s => `<button class="option-btn" onclick="setSearch('${s.full}')">${s.full} (${s.nick}) [${s.class}]</button>`).join('');
                     return addMsg(`พบข้อมูลที่ใกล้เคียงจำนวน ${matches.length} ท่าน กรุณาเลือกคนที่ต้องการทราบข้อมูลครับ:<br>${btns}`, 'ai-msg');
                 }
 
-                addMsg("ไม่พบข้อมูลครับ ลองพิมพ์ชื่อเล่น หรือชื่อวิชาดูครับ (เช่น 'ภาษาอังกฤษ', 'คณิตศาสตร์')", 'ai-msg');
+                addMsg("ไม่พบข้อมูลที่ระบุครับ ลองระบุชื่อเล่น หรือประเภทนักเรียนดูครับ", 'ai-msg');
             }, 500);
         }
 
         function formatList(title, list) {
             list.sort((a, b) => a.class.localeCompare(b.class));
-            let html = `${title}<br>`;
+            let html = `<strong>${title}</strong><br>`;
             let curClass = "";
             list.forEach(s => {
-                if (s.class !== curClass) { html += `<div style="color:blue; margin-top:5px; font-weight:600;">📍 ห้อง ${s.class}</div>`; curClass = s.class; }
+                if (s.class !== curClass) { html += `<div style="color:blue; margin-top:5px;">📍 ห้อง ${s.class}</div>`; curClass = s.class; }
                 html += `• ${s.full} (${s.nick})<br>`;
             });
             return html;
         }
 
         function report(s) {
-            return `📊 <strong>โปรไฟล์: ${s.full} (${s.nick})</strong><br>ห้อง: ${s.class}<br>⚠️ <strong>วิชาที่มีปัญหา:</strong> <span style="color:#d97706">${s.subject}</span><hr>✅ <strong>วิธีรับมือ/แผน IEP:</strong><br>${s.handle}`;
+            return `📊 <strong>โปรไฟล์: ${s.full} (${s.nick})</strong><br>ห้อง: ${s.class} | ประเภท: ${typeNames[s.type]}<hr>✅ <strong>วิธีรับมือ:</strong> ${s.handle}`;
         }
 
         function addMsg(t, c) {
@@ -556,6 +527,7 @@
             box.appendChild(d); box.scrollTop = box.scrollHeight;
         }
 
+        // ฟังก์ชันเมื่อคลิกปุ่มตัวเลือก
         window.setSearch = function (v) {
             document.getElementById('chatInput').value = v;
             doSmartSearch();
