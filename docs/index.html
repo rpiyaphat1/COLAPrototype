@@ -28,13 +28,14 @@
             margin: 0;
             background: var(--bg);
             color: var(--text-dark);
-            height: 100vh;
+            /* ใช้ dvh เพื่อให้พอดีกับความสูงจอโทรศัพท์จริงๆ */
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* --- Splash Screen (แสดงเฉพาะ Logo คุณครู) --- */
+        /* --- Splash Screen --- */
         #splashScreen {
             position: fixed;
             inset: 0;
@@ -50,7 +51,6 @@
 
         .logo-wrapper {
             width: 180px;
-            /* ขยายขนาดโลโก้ขึ้นเล็กน้อย */
             height: 180px;
             margin-bottom: 20px;
             display: flex;
@@ -87,6 +87,7 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #E5E7EB;
+            flex-shrink: 0;
         }
 
         header h1 {
@@ -98,25 +99,22 @@
 
         .content {
             flex: 1;
-            overflow-y: auto;
-            padding: 15px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         .page {
             display: none;
             height: 100%;
-        }
-
-        .page.active {
-            display: block;
-        }
-
-        /* --- Chat View --- */
-        #chatPage {
-            display: flex;
             flex-direction: column;
         }
 
+        .page.active {
+            display: flex;
+        }
+
+        /* --- Chat View --- */
         .chat-container {
             flex: 1;
             overflow-y: auto;
@@ -124,7 +122,6 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            height: calc(100vh - 180px);
         }
 
         .bubble {
@@ -149,15 +146,13 @@
             border-bottom-right-radius: 4px;
         }
 
-        /* ปรับปรุงช่อง Input ให้ Paste ได้ง่ายขึ้น */
         .chat-input-area {
             background: var(--white);
             padding: 12px;
             display: flex;
             gap: 8px;
             border-top: 1px solid #E5E7EB;
-            margin: -15px;
-            margin-top: 10px;
+            flex-shrink: 0;
         }
 
         .chat-input-area input {
@@ -168,12 +163,15 @@
             background: #F9FAFB;
             outline: none;
             font-size: 16px;
-            user-select: text !important;
-            /* บังคับให้เลือกและวางข้อความได้ */
-            -webkit-user-select: text !important;
         }
 
         /* --- Student Cards --- */
+        .student-list-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
         .student-card {
             background: var(--white);
             border-radius: 20px;
@@ -199,6 +197,8 @@
             padding: 10px 0;
             display: flex;
             justify-content: space-around;
+            flex-shrink: 0;
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .nav-item {
@@ -209,8 +209,7 @@
             color: var(--text-light);
             background: none;
             border: none;
-            width: 25%;
-            cursor: pointer;
+            width: 33%;
         }
 
         .nav-item.active {
@@ -228,9 +227,8 @@
             color: white;
             border: none;
             border-radius: 15px;
-            padding: 15px;
+            padding: 10px 20px;
             font-weight: 600;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -260,16 +258,17 @@
             <div class="chat-input-area">
                 <input type="text" id="chatInput" placeholder="พิมพ์ข้อความ..."
                     onkeypress="if(event.key==='Enter') sendMessage()">
-                <button class="btn-main" style="padding: 10px 20px;" onclick="sendMessage()">ส่ง</button>
+                <button class="btn-main" onclick="sendMessage()">ส่ง</button>
             </div>
         </div>
 
         <div id="dirPage" class="page">
-            <h3>รายชื่อนักเรียน</h3>
-            <div id="studentList"></div>
+            <div class="student-list-scroll" id="studentList"></div>
         </div>
-        <div id="settingPage" class="page">
-            <h3>การตั้งค่า</h3><button class="btn-main" style="width:100%; background:#FEE2E2; color:var(--danger);"
+
+        <div id="settingPage" class="page" style="padding: 20px;">
+            <h3>การตั้งค่า</h3>
+            <button class="btn-main" style="width:100%; background:#FEE2E2; color:var(--danger);"
                 onclick="location.reload()">ออกจากระบบ</button>
         </div>
     </main>
@@ -315,19 +314,13 @@
 
         window.onload = () => {
             renderStudents();
-            const logoImg = document.getElementById('appLogo');
-
-            // บังคับให้โหลดรูปจาก Path ที่กำหนดเท่านั้น
-            logoImg.src = config.logoPath;
-
+            document.getElementById('appLogo').src = config.logoPath;
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
                 splash.style.opacity = '0';
                 setTimeout(() => splash.style.display = 'none', 500);
             }, config.splashDuration);
         };
-
-        // แก้ไขเฉพาะส่วนฟังก์ชัน sendMessage ใน <script> เดิมของคุณครูครับ
 
         function sendMessage() {
             const input = document.getElementById('chatInput');
@@ -338,7 +331,7 @@
             input.value = '';
 
             setTimeout(() => {
-                // ล็อคคำตอบให้เป็นเคส LD การอ่าน + ชอบแมว เสมอตามที่คุณครูต้องการ
+                // คืนค่าข้อความชุดเดิมของคุณครูทั้งหมด
                 let res = `📊 <strong>วิเคราะห์ข้อมูลนักเรียน (เคส LD การอ่าน)</strong><br>`;
                 res += `👤 <strong>ชื่อ:</strong> เด็กชายสมชาย ใจดี ป.2/5<br>`;
                 res += `👤 <strong>ชื่อเล่น:</strong> น้องเอ<br>`;
@@ -376,7 +369,7 @@
 
         function renderStudents() {
             const list = document.getElementById('studentList');
-            list.innerHTML = students.map(s => `
+            list.innerHTML = `<h3>รายชื่อนักเรียน</h3>` + students.map(s => `
                 <div class="student-card" onclick="document.getElementById('chatInput').value='${s.nick}'; sendMessage(); navTo('chat', document.querySelector('.nav-item'))">
                     <strong>${s.full} (${s.nick})</strong><br>
                     <span class="tag">${s.type}</span>
