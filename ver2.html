@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEP Smart Assistant - ระบบดูแลนักเรียน LD</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&family=Kanit:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1e40af;
+            --admin: #5b21b6;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --border: #cbd5e1;
+            --text-main: #1e293b;
+            --text-label: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            margin: 0;
+            background: var(--bg);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Login --- */
+        #loginPage {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-card h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1e293b;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .login-group {
+            margin-bottom: 20px;
+        }
+
+        .login-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Sarabun';
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* --- Navigation --- */
+        nav {
+            background: #0f172a;
+            color: white;
+            padding: 0.8rem 2rem;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-links button {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-family: 'Sarabun';
+        }
+
+        .nav-links button.active {
+            color: white;
+            border-bottom: 2px solid #60a5fa;
+        }
+
+        /* --- Main Content --- */
+        .container {
+            flex: 1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: none;
+            overflow: hidden;
+        }
+
+        .page {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+            flex-direction: column;
+            padding-bottom: 40px;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        /* --- Chat UI --- */
+        .chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 15px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .msg {
+            margin-bottom: 12px;
+            padding: 12px 18px;
+            border-radius: 15px;
+            max-width: 85%;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            /* จัดการการขึ้นบรรทัดใหม่ */
+        }
+
+        .user-msg {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .ai-msg {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .option-btn {
+            background: #fff;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 5px 5px 5px 0;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .option-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* --- Admin & Directory --- */
+        .directory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .admin-list-group {
+            margin-bottom: 25px;
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+        }
+
+        .class-badge {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--text-label);
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Sarabun';
+            margin-top: 5px;
+        }
+
+        .subject-tag {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        /* Subject Toggle Buttons */
+        .subject-btn-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+            padding: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+
+        .subject-btn {
+            padding: 8px 16px;
+            border: 1px solid #cbd5e1;
+            background-color: white;
+            color: #64748b;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .subject-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .subject-btn:hover:not(.active) {
+            background-color: #f1f5f9;
+            border-color: #94a3b8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="loginPage">
+        <div class="login-card">
+            <h2>🔐 เข้าสู่ระบบ</h2>
+            <div class="login-group">
+                <label>Username</label>
+                <input type="text" id="userIn" placeholder="admin1 หรือ user">
+            </div>
+            <div class="login-group">
+                <label>Password</label>
+                <input type="password" id="passIn" placeholder="รหัสผ่าน">
+            </div>
+            <button class="btn-login" onclick="login()">เข้าสู่ระบบ</button>
+        </div>
+    </div>
+
+    <nav id="mainNav">
+        <div style="font-weight: 500;">IEP <span style="color:#60a5fa">Assistant</span></div>
+        <div class="nav-links">
+            <button id="navChat" class="active" onclick="togglePage('chat')">💬 แชทสืบค้น</button>
+            <button id="navDir" onclick="togglePage('dir')">📂 รายชื่อเด็ก</button>
+            <button id="navAdmin" class="hidden" onclick="togglePage('admin')">⚙️ ตั้งค่า (Admin)</button>
+            <button onclick="logout()" style="color:#ef4444">ออกจากระบบ</button>
+        </div>
+    </nav>
+
+    <div class="container" id="mainApp">
+        <div id="chatPage" class="page active">
+            <div class="chat-view">
+                <div class="messages" id="chatBox">
+                    <div class="msg ai-msg"><strong>สวัสดีครับ</strong>
+                        พิมพ์ชื่อนักเรียนเพื่อดูวิธีรับมือหรือปรึกษาเกี่ยวกับแผนการเรียนเฉพาะบุคคล ครับ</div>
+                </div>
+                <div class="footer"
+                    style="padding:15px; display:flex; gap:10px; background:white; border-top:1px solid #ddd;">
+                    <input type="text" id="chatInput" placeholder="พิมพ์ชื่อเด็ก หรือวิชา..."
+                        onkeypress="if(event.key==='Enter') doSmartSearch()">
+                    <button class="btn-login" style="margin-top:0; width:100px" onclick="doSmartSearch()">ส่ง</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="dirPage" class="page">
+            <div class="card">
+                <h3>📂 ทำเนียบนักเรียน LD แยกตามห้อง</h3>
+                <div id="directoryContent"></div>
+            </div>
+        </div>
+
+        <div id="adminPage" class="page">
+            <div class="card" style="border: 2px dashed var(--admin);">
+                <h3>📥 นำเข้าไฟล์ (Excel/CSV)</h3>
+                <p style="font-size:0.8rem; color:#666; margin-top:-10px;">*รองรับไฟล์แบบใหม่ (หลายวิชา, มีวิธีรับมือ)
+                </p>
+                <input type="file" id="excelInput" accept=".xlsx, .csv" onchange="importData(event)">
+            </div>
+
+            <div class="card">
+                <h3>👤 เพิ่มข้อมูลนักเรียนรายคน</h3>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                    <div><label>ชื่อเล่น</label><input type="text" id="inNick"></div>
+                    <div><label>ชื่อจริง-นามสกุล</label><input type="text" id="inFull"></div>
+                    <div><label>ชั้น (เช่น ป.1/1)</label><input type="text" id="inClass"></div>
+
+                    <div style="grid-column: span 2;">
+                        <label>วิชาที่มีปัญหา (คลิกเพื่อเลือก/ยกเลิก)</label>
+                        <div class="subject-btn-container" id="btnSubjects">
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-top:15px;"><label>อาการ/ปัญหาที่พบ</label><textarea id="inSymptom"
+                        rows="2"></textarea></div>
+                <div style="margin-top:15px;"><label>วิธีรับมือ/แผน IEP</label><textarea id="inHandle"
+                        rows="2"></textarea></div>
+                <button class="btn-login" style="background:var(--admin)" onclick="saveStudent()">💾
+                    บันทึกข้อมูล</button>
+            </div>
+
+            <div class="card">
+                <h3>📑 รายชื่อทั้งหมด (จัดระเบียบตามห้อง)</h3>
+                <div id="adminStudentList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db = [];
+        let currentUser = null;
+
+        const subjectList = [
+            "ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์และเทคโนโลยี",
+            "สังคมศึกษา ศาสนาและวัฒนธรรม", "สุขศึกษาและพลศึกษา",
+            "ศิลปะ", "การงานอาชีพและเทคโนโลยี", "ภาษาอังกฤษ"
+        ];
+
+        window.onload = function () {
+            const container = document.getElementById('btnSubjects');
+            subjectList.forEach(subj => {
+                const btn = document.createElement('div');
+                btn.className = 'subject-btn';
+                btn.innerText = subj;
+                btn.onclick = function () { this.classList.toggle('active'); };
+                container.appendChild(btn);
+            });
+        };
+
+        function login() {
+            const u = document.getElementById('userIn').value.trim().toLowerCase();
+            const p = document.getElementById('passIn').value;
+            if (u === 'admin1' && p === '1234') currentUser = { role: 'admin' };
+            else if (u === 'user' && p === '1111') currentUser = { role: 'user' };
+            else return alert('รหัสผ่านไม่ถูกต้อง');
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainNav').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'block';
+            if (currentUser.role === 'admin') document.getElementById('navAdmin').classList.remove('hidden');
+            renderAdminView();
+        }
+
+        function logout() { location.reload(); }
+
+        function togglePage(p) {
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-links button').forEach(el => el.classList.remove('active'));
+            document.getElementById(p + 'Page').classList.add('active');
+            document.getElementById('nav' + p.charAt(0).toUpperCase() + p.slice(1)).classList.add('active');
+            if (p === 'dir') renderDirectory();
+            if (p === 'admin') renderAdminView();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                json.forEach(item => {
+                    const getVal = (keys) => {
+                        const foundKey = Object.keys(item).find(k => keys.some(target => k.replace(/\s/g, '').includes(target)));
+                        return foundKey ? item[foundKey] : null;
+                    };
+
+                    db.push({
+                        nick: getVal(["ชื่อเล่น", "ชื่อเรียก"]) || "-",
+                        full: getVal(["ชื่อ-นามสกุล", "ชื่อจริง", "ชื่อ-นามสกุล"]) || "-",
+                        class: getVal(["ชั้นเรียน", "ชั้น", "ห้อง"]) || "-",
+                        subject: getVal(["วิชา", "subject"]) || "ไม่ระบุ",
+                        symptom: getVal(["อาการ", "symptom"]) || "-",
+                        handle: getVal(["วิธีรับมือ", "แผน", "เทคนิค"]) || "-"
+                    });
+                });
+                renderAdminView();
+                alert("นำเข้าสำเร็จ " + json.length + " รายการ");
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderAdminView() {
+            const cont = document.getElementById('adminStudentList');
+            if (db.length === 0) return cont.innerHTML = "ยังไม่มีข้อมูลนักเรียน";
+
+            // เรียงห้องแบบตัวเลข (Numeric Sort)
+            const classes = [...new Set(db.map(s => s.class))].sort((a, b) =>
+                a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+
+            cont.innerHTML = classes.map(c => `
+                <div class="admin-list-group">
+                    <div class="class-badge">ห้อง ${c}</div>
+                    <table>
+                        <thead><tr><th>ชื่อ</th><th>วิชาที่มีปัญหา</th><th>อาการ/วิธีรับมือ</th><th>จัดการ</th></tr></thead>
+                        <tbody>
+                            ${db.filter(s => s.class === c).map((s, idx) => {
+                let subjTags = s.subject.split(',').map(sub => `<span class="subject-tag">${sub.trim()}</span>`).join('');
+                return `<tr>
+                                    <td>${s.full} (${s.nick})</td>
+                                    <td>${subjTags}</td>
+                                    <td style="font-size:0.85rem">
+                                        <strong>อาการ:</strong> ${s.symptom.replace(/\n/g, '<br>')}<br>
+                                        <strong style="color:var(--primary)">วิธีรับมือ:</strong> ${s.handle.replace(/\n/g, '<br>')}
+                                    </td>
+                                    <td><button onclick="deleteStudent(${db.indexOf(s)})" style="color:red; border:none; background:none; cursor:pointer;">ลบ</button></td>
+                                </tr>`
+            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `).join('');
+        }
+
+        function deleteStudent(i) { if (confirm('ยืนยันการลบ?')) { db.splice(i, 1); renderAdminView(); } }
+
+        function saveStudent() {
+            let selectedSubjects = [];
+            document.querySelectorAll('#btnSubjects .subject-btn.active').forEach(btn => {
+                selectedSubjects.push(btn.innerText);
+            });
+
+            db.push({
+                nick: document.getElementById('inNick').value || "-",
+                full: document.getElementById('inFull').value || "-",
+                class: document.getElementById('inClass').value || "-",
+                subject: selectedSubjects.join(', ') || "ไม่ระบุ",
+                symptom: document.getElementById('inSymptom').value || "-",
+                handle: document.getElementById('inHandle').value || "-"
+            });
+            renderAdminView(); alert("บันทึกแล้ว");
+
+            document.getElementById('inNick').value = "";
+            document.getElementById('inFull').value = "";
+            document.getElementById('inClass').value = "";
+            document.getElementById('inSymptom').value = "";
+            document.getElementById('inHandle').value = "";
+            document.querySelectorAll('#btnSubjects .subject-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        function renderDirectory() {
+            const cont = document.getElementById('directoryContent');
+            // เรียงห้องแบบตัวเลข (Numeric Sort)
+            const classes = [...new Set(db.map(s => s.class))].sort((a, b) =>
+                a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+            );
+
+            cont.innerHTML = classes.map(c => `
+                <div class="class-section" style="margin-bottom:20px; border-left:4px solid var(--primary); padding-left:15px;">
+                    <h4 style="margin:0 0 10px 0;">ห้อง ${c}</h4>
+                    <div class="directory-grid">
+                        ${db.filter(s => s.class === c).map(s => {
+                let subjTags = s.subject.split(',').map(sub => `<span class="subject-tag">${sub.trim()}</span>`).join('');
+                return `<div style="background:white; padding:10px; border-radius:8px; border:1px solid #eee; font-size:0.9rem;">
+                                <strong>${s.full} (${s.nick})</strong><br>
+                                <div style="margin-top:5px;">${subjTags}</div>
+                                <div style="margin-top:5px; font-size:0.8rem; color:#666; max-height:60px; overflow:hidden; text-overflow:ellipsis;">
+                                    ${s.symptom}
+                                </div>
+                            </div>`
+            }).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function doSmartSearch() {
+            const val = document.getElementById('chatInput').value.trim();
+            if (!val) return;
+            addMsg(val, 'user-msg');
+            document.getElementById('chatInput').value = "";
+
+            setTimeout(() => {
+                const text = val.toLowerCase();
+
+                const foundSubject = subjectList.find(s =>
+                    text.includes(s) ||
+                    (text.includes("วิทย์") && s.includes("วิทยาศาสตร์")) ||
+                    (text.includes("งาน") && s.includes("การงาน")) ||
+                    (text.includes("อังกฤษ") && s.includes("ภาษาอังกฤษ"))
+                );
+
+                if (foundSubject) {
+                    let filtered = db.filter(s => s.subject.includes(foundSubject));
+                    if (filtered.length > 0) {
+                        return addMsg(formatList(`พบน้องที่มีปัญหาในรายวิชา <strong>${foundSubject}</strong> ทั้งหมด ${filtered.length} ท่าน:`, filtered), 'ai-msg');
+                    }
+                }
+
+                let matches = db.filter(s =>
+                    s.nick.toLowerCase().includes(text) ||
+                    s.full.toLowerCase().includes(text)
+                );
+
+                if (matches.length === 1) {
+                    return addMsg(report(matches[0]), 'ai-msg');
+                } else if (matches.length > 1) {
+                    let btns = matches.map(s => `<button class="option-btn" onclick="setSearch('${s.full}')">${s.full} (${s.nick}) [${s.class}]</button>`).join('');
+                    return addMsg(`พบข้อมูลที่ใกล้เคียงจำนวน ${matches.length} ท่าน กรุณาเลือกคนที่ต้องการทราบข้อมูลครับ:<br>${btns}`, 'ai-msg');
+                }
+
+                addMsg("ไม่พบข้อมูลครับ ลองพิมพ์ชื่อเล่น หรือชื่อวิชาดูครับ (เช่น 'ภาษาอังกฤษ', 'คณิตศาสตร์')", 'ai-msg');
+            }, 500);
+        }
+
+        function formatList(title, list) {
+            // เรียงห้องแบบตัวเลข (Numeric Sort)
+            list.sort((a, b) => a.class.localeCompare(b.class, undefined, { numeric: true, sensitivity: 'base' }));
+
+            let html = `${title}<br>`;
+            let curClass = "";
+            list.forEach(s => {
+                if (s.class !== curClass) { html += `<div style="color:blue; margin-top:5px; font-weight:600;">📍 ห้อง ${s.class}</div>`; curClass = s.class; }
+                html += `• ${s.full} (${s.nick}) <span style="color:#666; font-size:0.85em;">- ${s.symptom.substring(0, 30)}...</span><br>`;
+            });
+            return html;
+        }
+
+        function report(s) {
+            let subjTags = s.subject.split(',').map(sub => `<span style="background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:4px; margin-right:4px;">${sub.trim()}</span>`).join('');
+            return `📊 <strong>โปรไฟล์: ${s.full} (${s.nick})</strong><br>ห้อง: ${s.class}<br>⚠️ <strong>วิชาที่มีปัญหา:</strong><br>${subjTags}<br><br>📌 <strong>อาการที่พบ:</strong><br>${s.symptom.replace(/\n/g, '<br>')}<hr>✅ <strong>วิธีรับมือ/แผน IEP:</strong><br>${s.handle.replace(/\n/g, '<br>')}`;
+        }
+
+        function addMsg(t, c) {
+            const box = document.getElementById('chatBox');
+            const d = document.createElement('div'); d.className = `msg ${c}`; d.innerHTML = t;
+            box.appendChild(d); box.scrollTop = box.scrollHeight;
+        }
+
+        window.setSearch = function (v) {
+            document.getElementById('chatInput').value = v;
+            doSmartSearch();
+        }
+    </script>
+</body>
+
+</html>
